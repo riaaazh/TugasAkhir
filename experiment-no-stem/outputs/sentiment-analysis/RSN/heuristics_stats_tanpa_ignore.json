@@ -1,0 +1,21 @@
+{
+  "total_tweets": 13192,
+  "sentiment_distribution": {
+    "positive": 6591,
+    "negative": 5735,
+    "neutral": 866
+  },
+  "compound_score_stats": {
+    "mean": 0.022037487535813253,
+    "std": 0.6841843149175063,
+    "min": -0.9972837881812843,
+    "max": 0.9915259714654955
+  },
+  "heuristic_usage": {
+    "punctuation_applied": 606,
+    "capitalization_applied": 208,
+    "degree_modifiers_applied": 892,
+    "polarity_shift_applied": 622,
+    "negation_applied": 2089
+  }
+}

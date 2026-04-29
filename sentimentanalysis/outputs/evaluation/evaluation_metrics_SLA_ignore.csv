@@ -1,0 +1,2 @@
+Konfigurasi,Accuracy,Precision (M),Recall (M),F1-Score (M)
+SLA + Ignore Function,0.3956,0.4154,0.4151,0.3619

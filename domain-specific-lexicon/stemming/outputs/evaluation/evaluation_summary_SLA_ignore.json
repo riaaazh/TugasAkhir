@@ -1,0 +1,16 @@
+{
+  "konfigurasi": "SLA + Ignore Function",
+  "dataset_size": 450,
+  "ground_truth_distribution": {
+    "neutral": 164,
+    "negative": 153,
+    "positive": 133
+  },
+  "metrics": {
+    "Konfigurasi": "SLA + Ignore Function",
+    "Accuracy": "0.4422",
+    "Precision (M)": "0.4819",
+    "Recall (M)": "0.4607",
+    "F1-Score (M)": "0.3855"
+  }
+}

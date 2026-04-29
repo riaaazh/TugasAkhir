@@ -1,0 +1,2 @@
+Konfigurasi,Accuracy,Precision (M),Recall (M),F1-Score (M)
+RSN + Ignore Function,0.4244,0.4291,0.4095,0.3788

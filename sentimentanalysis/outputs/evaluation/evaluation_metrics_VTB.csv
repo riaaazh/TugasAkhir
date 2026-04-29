@@ -1,0 +1,2 @@
+Konfigurasi,Accuracy,Precision (M),Recall (M),F1-Score (M),Pearson-r
+VTB (Translation Based),0.4867,0.5184,0.4901,0.4844,0.2524

@@ -1,0 +1,16 @@
+{
+  "konfigurasi": "SLA + Remove Function",
+  "dataset_size": 450,
+  "ground_truth_distribution": {
+    "neutral": 164,
+    "negative": 153,
+    "positive": 133
+  },
+  "metrics": {
+    "Konfigurasi": "SLA + Remove Function",
+    "Accuracy": "0.3933",
+    "Precision (M)": "0.4468",
+    "Recall (M)": "0.4133",
+    "F1-Score (M)": "0.3442"
+  }
+}

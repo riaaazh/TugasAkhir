@@ -1,0 +1,16 @@
+{
+  "konfigurasi": "SLA + Tanpa Ignore",
+  "dataset_size": 450,
+  "ground_truth_distribution": {
+    "neutral": 164,
+    "negative": 153,
+    "positive": 133
+  },
+  "metrics": {
+    "Konfigurasi": "SLA + Tanpa Ignore",
+    "Accuracy": "0.4444",
+    "Precision (M)": "0.4532",
+    "Recall (M)": "0.4627",
+    "F1-Score (M)": "0.4029"
+  }
+}
