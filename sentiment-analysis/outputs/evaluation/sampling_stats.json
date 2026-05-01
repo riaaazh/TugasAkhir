@@ -1,0 +1,58 @@
+{
+  "total_samples": 450,
+  "sampling_method": "stratified_sampling_by_text_length",
+  "samples_per_category": 150,
+  "category_definitions": {
+    "pendek": {
+      "range": "0-49",
+      "label": "< 50 karakter"
+    },
+    "sedang": {
+      "range": "50-149",
+      "label": "50-149 karakter"
+    },
+    "panjang": {
+      "range": "150-infinity",
+      "label": ">= 150 karakter"
+    }
+  },
+  "grouping_statistics": {
+    "pendek": {
+      "total_in_population": 1214,
+      "samples_taken": 150
+    },
+    "sedang": {
+      "total_in_population": 9254,
+      "samples_taken": 150
+    },
+    "panjang": {
+      "total_in_population": 2724,
+      "samples_taken": 150
+    }
+  },
+  "sampling_statistics": {
+    "pendek": {
+      "total_available": 1214,
+      "samples_taken": 150,
+      "percentage": "9.2%"
+    },
+    "sedang": {
+      "total_available": 9254,
+      "samples_taken": 150,
+      "percentage": "70.1%"
+    },
+    "panjang": {
+      "total_available": 2724,
+      "samples_taken": 150,
+      "percentage": "20.6%"
+    }
+  },
+  "length_statistics": {
+    "min": 13,
+    "max": 267,
+    "mean": 112.00444444444445,
+    "median": 91.5,
+    "std": 73.25614808241899
+  },
+  "note": "Slovin formula tidak digunakan (tidak baku menurut dosen pembimbing)"
+}
