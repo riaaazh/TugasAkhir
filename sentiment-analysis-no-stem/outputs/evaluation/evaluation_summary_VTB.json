@@ -1,0 +1,12 @@
+{
+  "konfigurasi": "VTB (Translation Based)",
+  "dataset_size": 450,
+  "metrics": {
+    "Konfigurasi": "VTB (Translation Based)",
+    "Accuracy": "0.55",
+    "Precision (M)": "0.56",
+    "Recall (M)": "0.55",
+    "F1-Score (M)": "0.55",
+    "Pearson-r": "0.43"
+  }
+}

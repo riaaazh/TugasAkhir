@@ -1,0 +1,12 @@
+{
+  "konfigurasi": "SLA+REMOVE FUNCTION",
+  "dataset_size": 450,
+  "metrics": {
+    "Konfigurasi": "SLA+REMOVE FUNCTION",
+    "Accuracy": "0.56",
+    "Precision (M)": "0.58",
+    "Recall (M)": "0.53",
+    "F1-Score (M)": "0.51",
+    "Pearson-r": "0.46"
+  }
+}

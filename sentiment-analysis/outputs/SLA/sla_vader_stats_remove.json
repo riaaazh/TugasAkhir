@@ -1,0 +1,14 @@
+{
+  "total_tweets": 450,
+  "sentiment_distribution": {
+    "positive": 247,
+    "negative": 162,
+    "neutral": 41
+  },
+  "compound_score_stats": {
+    "mean": 0.13248902272858173,
+    "std": 0.6471675872328881,
+    "min": -0.9874196853835631,
+    "max": 0.982592642521834
+  }
+}

@@ -1,0 +1,8 @@
+Accuracy,Precision (M),Recall (M),F1-Score (M),Pearson-r,Konfigurasi
+0.56,0.59,0.54,0.52,0.46,RSN + Ignore Function
+0.56,0.58,0.53,0.51,0.46,RSN + Remove Function
+0.58,0.57,0.55,0.54,0.52,RSN + Tanpa Perlakuan
+0.56,0.59,0.54,0.52,0.46,SLA + Ignore Function
+0.56,0.58,0.53,0.51,0.46,SLA + Remove Function
+0.58,0.57,0.55,0.54,0.52,SLA + Tanpa Perlakuan
+0.54,0.56,0.53,0.54,0.42,VTB (Translation Based)

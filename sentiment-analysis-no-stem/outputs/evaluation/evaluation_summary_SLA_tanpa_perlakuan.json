@@ -1,0 +1,12 @@
+{
+  "konfigurasi": "SLA+TANPA PERLAKUAN",
+  "dataset_size": 450,
+  "metrics": {
+    "Konfigurasi": "SLA+TANPA PERLAKUAN",
+    "Accuracy": "0.58",
+    "Precision (M)": "0.55",
+    "Recall (M)": "0.55",
+    "F1-Score (M)": "0.54",
+    "Pearson-r": "0.56"
+  }
+}

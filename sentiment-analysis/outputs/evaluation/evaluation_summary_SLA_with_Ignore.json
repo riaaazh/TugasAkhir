@@ -1,0 +1,12 @@
+{
+  "konfigurasi": "SLA+IGNORE",
+  "dataset_size": 450,
+  "metrics": {
+    "Konfigurasi": "SLA+IGNORE",
+    "Accuracy": "0.56",
+    "Precision (M)": "0.59",
+    "Recall (M)": "0.54",
+    "F1-Score (M)": "0.52",
+    "Pearson-r": "0.46"
+  }
+}

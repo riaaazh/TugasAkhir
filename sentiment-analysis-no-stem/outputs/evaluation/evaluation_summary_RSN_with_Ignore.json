@@ -1,0 +1,12 @@
+{
+  "konfigurasi": "RSN+IGNORE",
+  "dataset_size": 450,
+  "metrics": {
+    "Konfigurasi": "RSN+IGNORE",
+    "Accuracy": "0.60",
+    "Precision (M)": "0.58",
+    "Recall (M)": "0.57",
+    "F1-Score (M)": "0.55",
+    "Pearson-r": "0.55"
+  }
+}

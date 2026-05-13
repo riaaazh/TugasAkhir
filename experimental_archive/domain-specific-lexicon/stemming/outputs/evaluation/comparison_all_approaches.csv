@@ -1,8 +1,0 @@
-Konfigurasi,Accuracy,Precision (M),Recall (M),F1-Score (M)
-RSN + Ignore Function,0.4244,0.4291,0.4095,0.3788
-RSN + Remove Function,0.3844,0.3784,0.3764,0.3742
-RSN + Tanpa Ignore,0.38,0.374,0.372,0.3701
-SLA + Ignore Function,0.4422,0.4819,0.4607,0.3855
-SLA + Remove Function,0.3933,0.4468,0.4133,0.3442
-SLA + Tanpa Ignore,0.4422,0.4819,0.4607,0.3855
-VTB (Translation Based),0.4378,0.4621,0.4461,0.4348
