@@ -40,8 +40,9 @@ st.markdown("""
         background: #e8f4fd;
         border: 1px solid #bee3f8;
         border-radius: 8px;
-        padding: 1rem 1.2rem;
+        padding: 1.5rem 1.2rem;
         margin: 0.5rem 0;
+        height: 100%;
     }
     .warning-box {
         background: #fff8e1;
@@ -79,6 +80,12 @@ st.markdown("""
         border-radius: 4px;
         display: inline-block;
     }
+    /* Mempercantik jarak radio button horizontal */
+    div.row-widget.stRadio > div{
+        flex-direction:row;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -87,7 +94,7 @@ def format_indo(angka):
     return f"{angka:,}".replace(",", ".")
 
 # =========================================================================
-# 2. DATA HARDCODED DARI LAPORAN (FALLBACK JIKA FILE CSV/PNG BELUM ADA)
+# 2. DATA HARDCODED DARI LAPORAN
 # =========================================================================
 
 SENTIMEN_PER_TAHUN = {
@@ -133,7 +140,7 @@ PIPELINE_DATA = [
 ]
 
 # =========================================================================
-# 3. FUNGSI LOAD DATA CSV (DENGAN CACHE)
+# 3. FUNGSI LOAD DATA CSV 
 # =========================================================================
 @st.cache_data
 def load_csv(path):
@@ -289,7 +296,7 @@ with tab1:
                 <span style="font-size:0.8rem;color:#888">{d['keterangan']}</span>
             </div>
             """, unsafe_allow_html=True)
-
+            
     st.markdown("---")
     st.markdown("##### 🔍 Inspeksi Sampel Data Preprocessing")
     
@@ -493,21 +500,35 @@ with tab2:
         configs = df_aktif['Konfigurasi'].astype(str).tolist()
         colors  = [COLOR_MAP.get(c, '#888') for c in configs]
 
+        if metrik_pilih in LOWER_BETTER:
+            ymax = max(vals) * 1.15
+        else:
+            ymax = max(vals) * 1.15 
+            if ymax < 1.0: ymax = 1.0
+
         fig_bar = go.Figure(go.Bar(
             x=configs, y=vals, marker_color=colors,
             text=[f"{v:.4f}" for v in vals], textposition="outside",
             hovertemplate="<b>%{x}</b><br>%{y:.4f}<extra></extra>",
         ))
+        
         if metrik_pilih in LOWER_BETTER:
             best_idx = vals.index(min(vals))
         else:
             best_idx = vals.index(max(vals))
+            
         fig_bar.data[0].marker.color = ['#FFD700' if i == best_idx else c for i, c in enumerate(colors)]
-        ymax = max(vals) * 1.22 if metrik_pilih not in LOWER_BETTER else max(vals) * 1.15
+        
         fig_bar.update_layout(
-            height=380, xaxis=dict(tickangle=-30), yaxis=dict(title=metrik_pilih, range=[0, ymax]),
-            margin=dict(t=20, b=10, l=10, r=10), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", showlegend=False,
+            height=380, 
+            xaxis=dict(tickangle=-30), 
+            yaxis=dict(title=metrik_pilih, range=[0, ymax]), 
+            margin=dict(t=20, b=10, l=10, r=10), 
+            paper_bgcolor="rgba(0,0,0,0)", 
+            plot_bgcolor="rgba(0,0,0,0)", 
+            showlegend=False,
         )
+        
         fig_bar.add_annotation(
             x=configs[best_idx], y=vals[best_idx], text="<b>⭐ Terbaik</b>", showarrow=False, yshift=30,
             font=dict(size=12, color="#333"), bgcolor="rgba(255,215,0,0.3)", bordercolor="#FFD700", borderwidth=1
@@ -544,8 +565,8 @@ with tab2:
         fig_klas.update_layout(
             barmode="group", 
             height=420, 
-            xaxis=dict(tickangle=-25, tickfont=dict(size=11)), 
-            yaxis=dict(title="Skor", range=[0, 0.85]), 
+            xaxis=dict(tickangle=0, tickfont=dict(size=11)), 
+            yaxis=dict(title="Skor", range=[0, 0.8]),  
             legend=dict(orientation="h", y=-0.25, font_size=11), 
             margin=dict(t=40, b=80, l=10, r=10), 
             paper_bgcolor="rgba(0,0,0,0)", 
@@ -566,8 +587,8 @@ with tab2:
         fig_kont.update_layout(
             barmode="group", 
             height=420, 
-            xaxis=dict(tickangle=-25, tickfont=dict(size=11)), 
-            yaxis=dict(title="Skor", range=[0, 0.75]), 
+            xaxis=dict(tickangle=0, tickfont=dict(size=11)), 
+            yaxis=dict(title="Skor (Pearson-r)", range=[0, 0.8]),  
             legend=dict(orientation="h", y=-0.25, font_size=11), 
             margin=dict(t=40, b=80, l=10, r=10), 
             paper_bgcolor="rgba(0,0,0,0)", 
@@ -583,12 +604,30 @@ with tab2:
     st.caption("Note: Semakin gelap warna biru, semakin tinggi nilai skor pada metrik tersebut.")
     
     hm_metrics = [c for c in ALL_METRICS_ORDER if c in df_aktif.columns]
-    fig_hm = go.Figure(go.Heatmap(z=df_aktif[hm_metrics].values.tolist(), x=hm_metrics, y=df_aktif['Konfigurasi'].astype(str).tolist(), colorscale="Blues", text=[[f"{v:.3f}" for v in row] for row in df_aktif[hm_metrics].values.tolist()], texttemplate="%{text}", showscale=True, colorbar=dict(title="Skor"), hoverongaps=False))
-    fig_hm.update_layout(height=340, xaxis=dict(tickangle=-25, side="top"), yaxis=dict(autorange="reversed"), margin=dict(t=60, b=20, l=180, r=20), paper_bgcolor="rgba(0,0,0,0)")
+    
+    fig_hm = go.Figure(go.Heatmap(
+        z=df_aktif[hm_metrics].values.tolist(), 
+        x=hm_metrics, 
+        y=df_aktif['Konfigurasi'].astype(str).tolist(), 
+        colorscale="Blues", 
+        text=[[f"{v:.3f}" for v in row] for row in df_aktif[hm_metrics].values.tolist()], 
+        texttemplate="%{text}", 
+        showscale=True, 
+        colorbar=dict(title="Skor"), 
+        hoverongaps=False
+    ))
+    
+    fig_hm.update_layout(
+        height=340, 
+        xaxis=dict(tickangle=0, side="top"), 
+        yaxis=dict(autorange="reversed"), 
+        margin=dict(t=60, b=20, l=180, r=20), 
+        paper_bgcolor="rgba(0,0,0,0)"
+    )
     st.plotly_chart(fig_hm, use_container_width=True)
 
     # =========================================================================
-    # D & E: COMPOSITE SCORE DAN TABEL LENGKAP
+    # D: COMPOSITE SCORE
     # =========================================================================
     st.markdown("---")
     if has_composite:
@@ -605,39 +644,8 @@ with tab2:
             fig_rank.add_annotation(x=df_ranked['Composite Score'].iloc[0], y=str(df_ranked['Konfigurasi'].iloc[0]), text="⭐ #1", showarrow=False, xshift=55, font=dict(size=13, color="#b8860b"))
             st.plotly_chart(fig_rank, use_container_width=True)
 
-        with col_rank_tbl:
-            st.markdown("##### Peringkat Lengkap")
-            display_cols = [c for c in ['Konfigurasi', 'Accuracy', 'F1-Score (M)', 'Pearson-r', 'Composite Score'] if c in df_ranked.columns]
-            num_cols_D = [c for c in display_cols if c != 'Konfigurasi']
-            
-            styler_D = df_ranked[display_cols].style \
-                .set_properties(subset=num_cols_D, **{'text-align': 'center'}) \
-                .set_table_styles([
-                    {'selector': 'th', 'props': [('text-align', 'center')]}
-                ]) \
-                .highlight_max(subset=['Composite Score'], color='#fff3cd') \
-                .format({c: "{:.4f}" for c in num_cols_D})
-                
-            st.dataframe(styler_D, use_container_width=True, hide_index=True, height=300)
-
-    st.markdown("---")
-    st.markdown("#### E. Tabel Lengkap Semua Metrik")
-    all_show = ['Konfigurasi','Pendekatan'] + [c for c in ALL_METRICS_ORDER if c in df_aktif.columns] + (['Composite Score'] if has_composite else [])
-    num_cols_E = [c for c in all_show if c not in ['Konfigurasi', 'Pendekatan']]
-    
-    styler_E = df_aktif[all_show].style \
-        .set_properties(subset=num_cols_E, **{'text-align': 'center'}) \
-        .set_table_styles([
-            {'selector': 'th', 'props': [('text-align', 'center')]}
-        ]) \
-        .format({c: "{:.4f}" for c in num_cols_E}) \
-        .highlight_max(subset=[c for c in all_show if c in HIGHER_BETTER or c == 'Composite Score'], color='#c8f7c5') \
-        .highlight_min(subset=[c for c in all_show if c in LOWER_BETTER], color='#c8f7c5')
-        
-    st.dataframe(styler_E, use_container_width=True, hide_index=True, height=320)
-
     # =========================================================================
-    # F: KESIMPULAN MODEL TERBAIK DI BAWAH TAB 2
+    # E: KESIMPULAN MODEL TERBAIK
     # =========================================================================
     st.markdown("---")
     st.markdown("""
@@ -680,41 +688,19 @@ with tab3:
 
         if jenis_chart == "Stacked Bar (Jumlah Tweet)":
             fig = go.Figure()
-            
-            fig.add_trace(go.Bar(name="Positif", x=df_tren["Tahun"], y=df_tren["Positif"], marker_color="#2a9d8f", 
-                                 text=df_tren["Positif"].apply(format_indo), textposition="inside", 
-                                 insidetextfont=dict(color="white"), 
-                                 hovertemplate="<b>Tahun %{x}</b><br>😊 Positif: %{text} tweet<extra></extra>"))
-            
-            fig.add_trace(go.Bar(name="Negatif", x=df_tren["Tahun"], y=df_tren["Negatif"], marker_color="#e63946", 
-                                 text=df_tren["Negatif"].apply(format_indo), textposition="inside", 
-                                 insidetextfont=dict(color="white"), 
-                                 hovertemplate="<b>Tahun %{x}</b><br>😠 Negatif: %{text} tweet<extra></extra>"))
-            
-            fig.add_trace(go.Bar(name="Netral",  x=df_tren["Tahun"], y=df_tren["Netral"], marker_color="#adb5bd", 
-                                 text=df_tren["Netral"].apply(format_indo), textposition="inside", 
-                                 insidetextfont=dict(color="white"), 
-                                 hovertemplate="<b>Tahun %{x}</b><br>😐 Netral: %{text} tweet<extra></extra>"))
-            
-            fig.update_layout(
-                barmode="stack", 
-                height=420, 
-                xaxis=dict(title="Tahun", tickmode="linear", dtick=1), 
-                yaxis_title="Jumlah Tweet", 
-                margin=dict(t=20, b=20), 
-                paper_bgcolor="rgba(0,0,0,0)", 
-                plot_bgcolor="rgba(0,0,0,0)",
-                uniformtext_minsize=12, 
-                uniformtext_mode='hide'
-            )
+            fig.add_trace(go.Bar(name="Positif", x=df_tren["Tahun"], y=df_tren["Positif"], marker_color="#2a9d8f", text=df_tren["Positif"].apply(format_indo), textposition="inside"))
+            fig.add_trace(go.Bar(name="Negatif", x=df_tren["Tahun"], y=df_tren["Negatif"], marker_color="#e63946", text=df_tren["Negatif"].apply(format_indo), textposition="inside"))
+            fig.add_trace(go.Bar(name="Netral",  x=df_tren["Tahun"], y=df_tren["Netral"], marker_color="#adb5bd", text=df_tren["Netral"].apply(format_indo), textposition="inside"))
+            fig.update_layout(barmode="stack", height=420, xaxis=dict(title="Tahun", tickmode="linear", dtick=1), yaxis_title="Jumlah Tweet", margin=dict(t=20, b=20), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, use_container_width=True)
-
+            
         elif jenis_chart == "Line Chart (% Sentimen)":
             fig = go.Figure()
             fig.add_trace(go.Scatter(name="% Positif", x=df_tren["Tahun"], y=df_tren["% Positif"], mode="lines+markers+text", marker_color="#2a9d8f", text=df_tren["% Positif"].apply(lambda v: f"{v}%"), textposition="top center", line=dict(width=3)))
             fig.add_trace(go.Scatter(name="% Negatif", x=df_tren["Tahun"], y=df_tren["% Negatif"], mode="lines+markers+text", marker_color="#e63946", text=df_tren["% Negatif"].apply(lambda v: f"{v}%"), textposition="bottom center", line=dict(width=3)))
             fig.update_layout(height=420, xaxis=dict(title="Tahun", tickmode="linear", dtick=1), yaxis=dict(title="Persentase (%)", range=[0, 110]), margin=dict(t=20, b=20), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, use_container_width=True)
+            
         else:
             fig = go.Figure()
             fig.add_trace(go.Scatter(name="Positif", x=df_tren["Tahun"], y=df_tren["Positif"], fill="tonexty", mode="lines", marker_color="#2a9d8f", fillcolor="rgba(42,157,143,0.3)"))
@@ -723,23 +709,21 @@ with tab3:
             st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("##### 📋 Tabel Distribusi Sentimen Per Tahun")
-        
         num_cols_T3 = [c for c in df_tren.columns if c != 'Tahun']
-        
         styler_T3 = df_tren.style \
             .set_properties(subset=num_cols_T3, **{'text-align': 'center'}) \
-            .set_table_styles([
-                {'selector': 'th', 'props': [('text-align', 'center'), ('font-weight', 'bold')]}
-            ]) \
+            .set_table_styles([{'selector': 'th', 'props': [('text-align', 'center'), ('font-weight', 'bold')]}]) \
             .background_gradient(subset=["% Positif"], cmap="Greens") \
             .background_gradient(subset=["% Negatif"], cmap="Reds") \
             .background_gradient(subset=["% Netral"], cmap="Greys") \
             .format({"% Positif":"{:.1f}%","% Negatif":"{:.1f}%","% Netral":"{:.1f}%","Total": format_indo, "Positif": format_indo, "Negatif": format_indo, "Netral": format_indo})
-            
         st.dataframe(styler_T3, use_container_width=True, hide_index=True)
 
     else:
-        tahun_pilih = st.slider("📅 Pilih Tahun:", min_value=2016, max_value=2025, value=2021)
+        opsi_tahun = [str(y) for y in range(2016, 2026)]
+        tahun_pilih_str = st.selectbox("📅 Pilih Tahun:", options=opsi_tahun, index=8, key="sentimen_dropdown")
+        tahun_pilih = int(tahun_pilih_str)
+        
         data_tahun = SENTIMEN_PER_TAHUN[tahun_pilih]
         total_t = data_tahun["positif"] + data_tahun["negatif"] + data_tahun["netral"]
         
@@ -775,33 +759,33 @@ with tab3:
             st.markdown(f"<h5 style='margin-bottom: 1rem;'>📊 Detail Tahun {tahun_pilih}</h5>", unsafe_allow_html=True)
             
             st.markdown(f"""
-<div style="background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;margin-bottom:1rem;border-left:5px solid #0f3460;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-<div style="font-size:0.95rem;color:#666;font-weight:500;">Total Tweet</div>
-<div style="font-size:2.2rem;font-weight:800;color:#1a202c;line-height:1.2;">{format_indo(total_t)}</div>
-</div>
-<div style="display:flex;gap:1rem;margin-bottom:1rem;">
-<div style="flex:1;background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;border-left:5px solid #2a9d8f;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-<div style="font-size:0.9rem;color:#666;font-weight:500;">😊 Positif</div>
-<div style="font-size:1.8rem;font-weight:800;color:#2a9d8f;line-height:1.2;margin:0.2rem 0;">{format_indo(data_tahun['positif'])}</div>
-<div style="display:inline-block;background-color:#e8f5e9;color:#2e7d32;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;">{pct_pos}</div>
-</div>
-<div style="flex:1;background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;border-left:5px solid #e63946;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-<div style="font-size:0.9rem;color:#666;font-weight:500;">😠 Negatif</div>
-<div style="font-size:1.8rem;font-weight:800;color:#e63946;line-height:1.2;margin:0.2rem 0;">{format_indo(data_tahun['negatif'])}</div>
-<div style="display:inline-block;background-color:#ffebee;color:#c62828;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;">{pct_neg}</div>
-</div>
-</div>
-<div style="background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem 1.2rem;border-left:5px solid #adb5bd;box-shadow:0 2px 4px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;">
-<div>
-<div style="font-size:0.9rem;color:#666;font-weight:500;">😐 Netral</div>
-<div style="font-size:1.5rem;font-weight:800;color:#6c757d;">{format_indo(data_tahun['netral'])}</div>
-</div>
-<div style="background-color:#f8f9fa;color:#495057;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;border:1px solid #dee2e6;">{pct_net}</div>
-</div>
-""", unsafe_allow_html=True)
+            <div style="background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;margin-bottom:1rem;border-left:5px solid #0f3460;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.95rem;color:#666;font-weight:500;">Total Tweet</div>
+            <div style="font-size:2.2rem;font-weight:800;color:#1a202c;line-height:1.2;">{format_indo(total_t)}</div>
+            </div>
+            <div style="display:flex;gap:1rem;margin-bottom:1rem;">
+            <div style="flex:1;background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;border-left:5px solid #2a9d8f;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.9rem;color:#666;font-weight:500;">😊 Positif</div>
+            <div style="font-size:1.8rem;font-weight:800;color:#2a9d8f;line-height:1.2;margin:0.2rem 0;">{format_indo(data_tahun['positif'])}</div>
+            <div style="display:inline-block;background-color:#e8f5e9;color:#2e7d32;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;">{pct_pos}</div>
+            </div>
+            <div style="flex:1;background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1.2rem;border-left:5px solid #e63946;box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-size:0.9rem;color:#666;font-weight:500;">😠 Negatif</div>
+            <div style="font-size:1.8rem;font-weight:800;color:#e63946;line-height:1.2;margin:0.2rem 0;">{format_indo(data_tahun['negatif'])}</div>
+            <div style="display:inline-block;background-color:#ffebee;color:#c62828;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;">{pct_neg}</div>
+            </div>
+            </div>
+            <div style="background-color:#ffffff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem 1.2rem;border-left:5px solid #adb5bd;box-shadow:0 2px 4px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;">
+            <div>
+            <div style="font-size:0.9rem;color:#666;font-weight:500;">😐 Netral</div>
+            <div style="font-size:1.5rem;font-weight:800;color:#6c757d;">{format_indo(data_tahun['netral'])}</div>
+            </div>
+            <div style="background-color:#f8f9fa;color:#495057;padding:0.2rem 0.6rem;border-radius:4px;font-size:0.85rem;font-weight:600;border:1px solid #dee2e6;">{pct_net}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # =========================================================================
-# TAB 4: PEMODELAN TOPIK LDA
+# TAB 4: PEMODELAN TOPIK LDA 
 # =========================================================================
 with tab4:
     st.subheader("Pemodelan Topik Isu Kritis - Latent Dirichlet Allocation (LDA)")
@@ -809,31 +793,152 @@ with tab4:
 
     mode_lda = st.radio("🖼️ Tampilan:", ["Grafik Interaktif (Semua Tahun)", "Detail Per Tahun"], horizontal=True, key="lda_mode")
 
+    topik_keys = ["T1","T2","T3","T4","T5","T6"]
+    short_labels = [f"Topik {k[1]}" for k in topik_keys]
+    
+    # Menentukan Palet Warna untuk tiap Topik agar Legend seragam
+    COLOR_MAP_LDA = {
+        "Topik 1": "#1f77b4", # Biru
+        "Topik 2": "#ff7f0e", # Oranye
+        "Topik 3": "#2ca02c", # Hijau
+        "Topik 4": "#d62728", # Merah
+        "Topik 5": "#9467bd", # Ungu
+        "Topik 6": "#8c564b"  # Coklat
+    }
+
     if mode_lda == "Grafik Interaktif (Semua Tahun)":
-        topik_keys = ["T1","T2","T3","T4","T5","T6"]
-        fig_heat = go.Figure(go.Heatmap(z=[[TOPIK_PER_TAHUN[t][k] for k in topik_keys] for t in sorted(TOPIK_PER_TAHUN.keys())], x=[LABEL_TOPIK[k] for k in topik_keys], y=[str(t) for t in sorted(TOPIK_PER_TAHUN.keys())], colorscale="Blues", text=[[f"{v:.1f}%" for v in row] for row in [[TOPIK_PER_TAHUN[t][k] for k in topik_keys] for t in sorted(TOPIK_PER_TAHUN.keys())]], texttemplate="%{text}", showscale=True))
-        fig_heat.update_layout(title="Heatmap Distribusi 6 Topik LDA per Tahun", height=420, xaxis=dict(tickangle=-25), margin=dict(t=50, b=100, l=60, r=20), paper_bgcolor="rgba(0,0,0,0)")
+        fig_heat = go.Figure(go.Heatmap(
+            z=[[TOPIK_PER_TAHUN[t][k] for k in topik_keys] for t in sorted(TOPIK_PER_TAHUN.keys())], 
+            x=short_labels, 
+            y=[str(t) for t in sorted(TOPIK_PER_TAHUN.keys())], 
+            colorscale="Blues", 
+            text=[[f"{v:.1f}%" for v in row] for row in [[TOPIK_PER_TAHUN[t][k] for k in topik_keys] for t in sorted(TOPIK_PER_TAHUN.keys())]], 
+            texttemplate="%{text}", 
+            showscale=True
+        ))
+        
+        fig_heat.update_layout(
+            title="Heatmap Distribusi 6 Topik LDA per Tahun", 
+            height=420, 
+            margin=dict(t=50, b=40, l=60, r=20), 
+            paper_bgcolor="rgba(0,0,0,0)"
+        )
         st.plotly_chart(fig_heat, use_container_width=True)
+        
+        # Keterangan tetap dimunculkan di bawah jika mode Heatmap
+        st.markdown("""
+        <div style="background-color: #f8f9fa; border: 1px solid #e0e0e0; border-left: 5px solid #0f3460; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem;">
+            <h5 style="margin-top: 0; margin-bottom: 1rem; color: #1a202c; font-size: 1.1rem;">📖 Keterangan Deskripsi Topik:</h5>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 12px; font-size: 0.95rem; color: #444;">
+                <div><strong style="color: #1f77b4;">Topik 1:</strong> Pembahasan Kebijakan, Komisi, dan Sidang DPR</div>
+                <div><strong style="color: #ff7f0e;">Topik 2:</strong> Kebijakan dan Representasi Wakil Rakyat</div>
+                <div><strong style="color: #2ca02c;">Topik 3:</strong> Politik Partai dan Proses Legislasi DPR</div>
+                <div><strong style="color: #d62728;">Topik 4:</strong> Reses dan Aktivitas Kelembagaan DPR</div>
+                <div><strong style="color: #9467bd;">Topik 5:</strong> Aspirasi Rakyat dan Fungsi Perwakilan DPR</div>
+                <div><strong style="color: #8c564b;">Topik 6:</strong> Korupsi dan Kritik terhadap Elite Politik</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     else:
-        tahun_lda = st.slider("📅 Pilih Tahun:", min_value=2016, max_value=2025, value=2024, key="lda_slider")
+        opsi_tahun = [str(y) for y in range(2016, 2026)]
+        tahun_lda_str = st.selectbox("📅 Pilih Tahun:", options=opsi_tahun, index=8, key="lda_dropdown")
+        tahun_lda = int(tahun_lda_str)
+        
         data_lda = TOPIK_PER_TAHUN[tahun_lda]
-        col_lda_chart, col_lda_info = st.columns([3, 2])
+        col_lda_chart, col_lda_info = st.columns([2.5, 1])
 
         with col_lda_chart:
-            df_lda_bar = pd.DataFrame({"Topik": [LABEL_TOPIK[k] for k in data_lda], "Persentase": list(data_lda.values())}).sort_values("Persentase", ascending=True)
-            fig_lda = go.Figure(go.Bar(x=df_lda_bar["Persentase"], y=df_lda_bar["Topik"], orientation="h", text=df_lda_bar["Persentase"].apply(lambda v: f"{v:.1f}%"), textposition="outside"))
-            fig_lda.update_layout(title=f"Distribusi 6 Topik LDA — Tahun {tahun_lda}", height=380, xaxis=dict(range=[0, max(data_lda.values())*1.3]), margin=dict(t=50, b=20, l=260, r=60), paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            df_lda_bar = pd.DataFrame({
+                "Topik_Pendek": [f"Topik {k[1]}" for k in data_lda.keys()], 
+                "Label_Lengkap": [LABEL_TOPIK[k] for k in data_lda.keys()],
+                "Persentase": list(data_lda.values())
+            }).sort_values("Persentase", ascending=False)
+            
+            fig_lda = go.Figure()
+            
+            for idx, row in df_lda_bar.iterrows():
+                fig_lda.add_trace(go.Bar(
+                    x=[row["Topik_Pendek"]], 
+                    y=[row["Persentase"]], 
+                    name=row["Label_Lengkap"], 
+                    marker_color=COLOR_MAP_LDA[row["Topik_Pendek"]],
+                    text=[f"{row['Persentase']:.1f}%"], 
+                    textposition="outside",
+                    hovertemplate="<b>%{x}</b><br>Persentase: %{y:.1f}%<extra></extra>"
+                ))
+                
+            fig_lda.update_layout(
+                title=f"Distribusi 6 Topik LDA - Tahun {tahun_lda}", 
+                height=550, 
+                yaxis=dict(title="Persentase (%)", range=[0, max(data_lda.values())*1.2]), 
+                xaxis=dict(title=""), 
+                margin=dict(t=50, b=10, l=10, r=10), 
+                paper_bgcolor="rgba(0,0,0,0)", 
+                plot_bgcolor="rgba(0,0,0,0)",
+                legend=dict(
+                    title="Keterangan Deskripsi Topik (Legend):",
+                    orientation="h",       
+                    yanchor="top",
+                    y=-0.15,
+                    xanchor="center",
+                    x=0.5,
+                    font=dict(size=11)
+                )
+            )
             st.plotly_chart(fig_lda, use_container_width=True)
 
         with col_lda_info:
+            dominan_key = max(data_lda, key=data_lda.get)
+            dominan_label_pendek = f"Topik {dominan_key[1]}"
+            
             st.markdown(f"""
-            <div class="insight-box">
-                <b>Total tweet negatif:</b> {format_indo(SENTIMEN_PER_TAHUN[tahun_lda]["negatif"])}<br>
-                <b>Topik Dominan:</b> <span style="color:#0f3460;font-weight:700">{LABEL_TOPIK[max(data_lda, key=data_lda.get)]}</span> ({data_lda[max(data_lda, key=data_lda.get)]:.1f}%)
+            <div style="margin-top: 3.5rem;" class="insight-box">
+                <span style="font-size:0.9rem;color:#666;">Total tweet negatif:</span><br>
+                <span style="font-size:1.4rem;font-weight:700;">{format_indo(SENTIMEN_PER_TAHUN[tahun_lda]["negatif"])}</span>
+                <hr style="margin: 10px 0; border-color: #bee3f8;">
+                <span style="font-size:0.9rem;color:#666;">Topik Dominan:</span><br>
+                <b style="color:{COLOR_MAP_LDA[dominan_label_pendek]};font-size:1.1rem;">{LABEL_TOPIK[dominan_key]}</b><br>
+                <span style="font-size:2rem;font-weight:800;color:#1a202c;">{data_lda[dominan_key]:.1f}%</span>
             </div>
             """, unsafe_allow_html=True)
 
-# FOOTER (DI LUAR TAB AGAR TETAP MUNCUL DI BAWAH)
+    # --- BAGIAN BARU: KESIMPULAN TOPIK DOMINAN ---
+    # Hitung Topik Paling Dominan Secara Keseluruhan (Rata-rata 2016-2025)
+    avg_topik = {}
+    for k in topik_keys:
+        avg_topik[k] = sum(TOPIK_PER_TAHUN[t][k] for t in TOPIK_PER_TAHUN) / len(TOPIK_PER_TAHUN)
+    
+    dominan_overall_key = max(avg_topik, key=avg_topik.get)
+    dominan_overall_val = avg_topik[dominan_overall_key]
+    dominan_overall_label = LABEL_TOPIK[dominan_overall_key]
+    dominan_overall_color = COLOR_MAP_LDA[f"Topik {dominan_overall_key[1]}"]
+
+    st.markdown("---")
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%); 
+                padding: 2.5rem 2rem; 
+                border-radius: 12px; 
+                color: white; 
+                text-align: center; 
+                margin-top: 1.5rem; 
+                margin-bottom: 1rem;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+                border: 1px solid #16213e;">
+        <h3 style="color: #FFD700; margin-bottom: 0.8rem; font-size: 1.6rem;">📢 Kesimpulan Isu Kritis Dominan</h3>
+        <p style="font-size: 1.1rem; margin-bottom: 0.5rem; opacity: 0.9;">
+            Secara keseluruhan dari tahun 2016 hingga 2025, ketidakpuasan publik paling banyak terpusat pada:
+        </p>
+        <h2 style="color: #ffffff; font-size: 2.2rem; font-weight: 800; margin: 0.8rem 0; letter-spacing: 1px;">
+            {dominan_overall_label}
+        </h2>
+        <div style="display: inline-block; background-color: rgba(255, 255, 255, 0.1); padding: 0.5rem 1.5rem; border-radius: 30px; margin-top: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.2);">
+            <span style="font-size: 1.1rem; color: {dominan_overall_color}; font-weight: 600;">✨ Rata-rata persentase kemunculan: {dominan_overall_val:.1f}%</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# FOOTER
 st.markdown("""
 <div style="text-align:center;color:#888;font-size:0.8rem;padding:1rem;margin-top:2rem;">
     Dashboard ini dikembangkan sebagai bagian dari Tugas Akhir Siti Aminatuzzuhriyah (10221014) | Institut Teknologi Kalimantan | 2026
